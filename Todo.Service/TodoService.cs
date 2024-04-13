@@ -1,65 +1,62 @@
-using TodoList.Domain;
-using TodoList.Domain.Interface;
-using Todolist.Models;
+﻿using Todo.Domain;
+using Todo.Repositories;
+using System;
 
-namespace Todo.Service;
-
-public class TodoService(ITodoRepository repository) : ITodoService
+namespace Todo.Service
 {
-    public async Task<bool> Delete(int id)
+    public class UserService
     {
-        var todo = await repository.GetByIdAsync(id);
-        todo.IsActive = false;
-        repository.Update(todo);
-        await repository.SaveChangesAsync(default);
-        return true;
-    }
+        private readonly IUserRepository _userRepository;
 
-    public async Task<bool> MarkAsDone(int id)
-    {
-        var todo = await repository.GetByIdAsync(id);
-        todo.Status = Status.Done;
-        repository.Update(todo);
-        await repository.SaveChangesAsync(default);
-
-        return true;
-    }
-
-    public IEnumerable<TodoModel> GetAll()
-    {
-        return repository.GetAll().Select(c => new TodoModel()
+        public UserService(IUserRepository userRepository)
         {
-            Category = c.Category,
-            IsActive = c.IsActive,
-            Description = c.Description,
-            DueDate = c.DueDate,
-            Status = c.Status,
-            Id = c.Id
-        }).ToArray();
-    }
+            _userRepository = userRepository;
+        }
 
-    public async Task<int> Add(AddTodoModel model)
-    {
-        repository.Add(new ToDo()
+        public void Register(User userModel)
         {
-            Category = model.Category,
-            Description = model.Description,
-            DueDate = model.DueDate,
-            IsActive = true,
-            Status = Status.New,
-        });
+            // Check if email already exists
+            if (_userRepository.GetByEmail(userModel.Email) != null)
+            {
+                throw new InvalidOperationException("Email already exists.");
+            }
 
-        return 0;
-    }
+            // Add user
+            _userRepository.Create(userModel);
+        }
 
-    public async Task<int> UpdateDescription(int id, string description)
-    {
-        var todo = await repository.GetByIdAsync(id);
-        todo.Description = description;
+        public void ChangePassword(int userId, string newPassword)
+        {
+            var user = _userRepository.GetById(userId);
+            if (user != null)
+            {
+                user.Password = newPassword;
+                _userRepository.Update(user);
+            }
+            else
+            {
+                throw new InvalidOperationException("User not found.");
+            }
+        }
 
-        repository.Update(todo);
-        await repository.SaveChangesAsync(default);
+        public bool Login(string email, string password)
+        {
+            var user = _userRepository.GetByEmail(email);
+            return user != null && user.Password == password && !user.IsLocked;
+        }
 
-        return 0;
+        public void LockAccount(int userId)
+        {
+            var user = _userRepository.GetById(userId);
+            if (user != null)
+            {
+                user.IsLocked = true;
+                _userRepository.Update(user);
+            }
+            else
+            {
+                throw new InvalidOperationException("User not found.");
+            }
+        }
     }
 }

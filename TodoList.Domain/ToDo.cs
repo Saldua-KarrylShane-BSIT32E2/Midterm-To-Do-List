@@ -1,14 +1,10 @@
-﻿using Todolist.Models;
-
-namespace TodoList.Domain;
-
-public class ToDo
+﻿namespace Todo.Domain
 {
-    public int Id { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public DateTime? DueDate { get; set; }
-    public Category Category { get; set; } = Category.Adventure;
-    public bool IsActive { get; set; } = true;
-    public Status Status { get; set; } = Status.New;
-
+    public class User
+    {
+        public int UserId { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public bool IsLocked { get; set; }
+    }
 }

@@ -1,16 +1,19 @@
-﻿@using TodoList.Domain
-@model IEnumerable<TodoList.Domain.ToDo>
+﻿@using Todo.Domain
+@model Todo.Domain.ToDo
 
 <div class="row">
     <div class="col-md-2">
+        <!-- Filter form -->
         <form asp-action="Filter" method="post">
+            <!-- Category filter -->
             <div class="mb-3">
                 <label class="form-label">Category</label>
                 <select name="filter" class="form-select"
-                        asp-items="@(new SelectList(ViewBag.Categories,"CategoryId","Name",ViewBag.Filters.CategoryId))">
+                        asp-items="@(new SelectList(ViewBag.Categories, "CategoryId", "Name", ViewBag.Filters.CategoryId))">
                     <option value="all">ALL</option>
                 </select>
             </div>
+            <!-- Due filter -->
             <div class="mb-3">
                 <label class="form-label">Due:</label>
                 <select name="filter" class="form-select"
@@ -18,36 +21,36 @@
                     <option value="all">All</option>
                 </select>
             </div>
+            <!-- Status filter -->
             <div class="mb-3">
                 <label class="form-label">Status:</label>
                 <select name="filter" class="form-select"
-                        asp-items="@(new SelectList(ViewBag.Statuses,"StatusId", "Name", ViewBag.Filters.StatusId))">
+                        asp-items="@(new SelectList(ViewBag.Statuses, "StatusId", "Name", ViewBag.Filters.StatusId))">
                     <option value="all">All</option>
                 </select>
             </div>
+            <!-- Filter and clear buttons -->
             <button type="submit" class="btn btn-primary">Filter</button>
             <a asp-action="Index" asp-route-id="" class="btn btn-primary">Clear</a>
         </form>
     </div>
     <div class="col-md-10">
+        <!-- MarkComplete form -->
         <form asp-action="MarkComplete" method="post" asp-route-id="@ViewBag.Filters.FilterString">
-
+            <!-- Task table -->
             <table class="table table-bordered table-striped mt-2">
-                <div class="th">
                 <thead>
-                    
-                        <tr>
+                    <tr>
                         <th>Description</th>
                         <th>Category</th>
                         <th>Due Date</th>
                         <th>Status</th>
+                        <th></th>
                     </tr>
-                    
-
                 </thead>
-    </div>
                 <tbody>
-                    @foreach (ToDo task in Model)
+                    @* Render tasks *@
+                    @foreach (Todo.Domain.ToDo task in Model)
                     {
                         string overdue = task.Overdue ? "bg-warning" : "";
                         <tr>
@@ -56,10 +59,11 @@
                             <td class="@overdue">@task.DueDate?.ToShortDateString()</td>
                             <td class="@overdue">@task.Status.Name</td>
                             <td>
+                                @* Mark completed button *@
                                 @if (task.StatusId == "open")
-                            {
+                                {
                                     <button type="submit" class="btn btn-primary btn-sm"
-                                            name="@nameof(ToDo.Id)" value="@task.Id">
+                                            name="@nameof(Todo.Domain.ToDo.Id)" value="@task.Id">
                                         Mark Completed
                                     </button>
                                 }
@@ -69,7 +73,9 @@
                 </tbody>
             </table>
         </form>
+        <!-- DeleteComplete form -->
         <form asp-action="DeleteComplete" method="post" asp-route-id="@ViewBag.Filters.FilterString">
+            <!-- Add new task and delete completed tasks buttons -->
             <a asp-action="Add" class="btn btn-primary">Add New Task</a>
             <button type="submit" class="btn btn-primary">Delete Completed Tasks</button>
         </form>
